@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIX Store - Web App</title>
+    <!-- ربط مكتبة تليجرام الرسمية للـ Web Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #0d0e15;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* عنوان المتجر بتأثير النيون */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin: 0;
+            color: #00f0ff;
+            text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+        }
+        .header p {
+            color: #bd00ff;
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            text-shadow: 0 0 8px #bd00ff;
+        }
+
+        /* حاوية الأزرار الملونة الثابتة */
+        .button-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* تصميم الأزرار الاحترافية الملونة */
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* الزر الأخضر الكبير للمتجر */
+        .btn-shop {
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            box-shadow: 0 4px 15px rgba(0, 255, 135, 0.4);
+        }
+
+        /* الأزرار الجانبية */
+        .btn-wallet {
+            background: linear-gradient(135deg, #00f0ff 0%, #0072ff 100%);
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-profile {
+            background: linear-gradient(135deg, #bd00ff 0%, #bd00ff 100%);
+            box-shadow: 0 4px 15px rgba(189, 0, 255, 0.3);
+        }
+
+        /* زر الإلغاء أو التنظيف الأحمر */
+        .btn-clear {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>✦ AIX Store ✦</h1>
+        <p>متجر الاشتراكات الرقمية المميزة</p>
+    </div>
+
+    <div class="button-container">
+        <!-- الزر الأخضر الرئيسي -->
+        <button class="btn btn-shop" onclick="sendAction('shop')">🛍️ تصفح المنتجات وشراء الآن</button>
+        
+        <!-- أزرار المحفظة والحساب -->
+        <button class="btn btn-wallet" onclick="sendAction('deposit')">💵 شحن المحفظة / إيداع</button>
+        <button class="btn btn-profile" onclick="sendAction('profile')">👤 ملف الحساب الشخصي</button>
+        
+        <!-- زر الدعم والإحالات -->
+        <button class="btn btn-wallet" onclick="sendAction('support')">🎧 الدعم الفني السريع</button>
+        <button class="btn btn-profile" onclick="sendAction('share')">🎁 انشر البوت واكسب USDT</button>
+
+        <!-- الزر الأحمر السفلي لإغلاق الشاشة -->
+        <button class="btn btn-clear" onclick="closeWebApp()">❌ إغلاق المتجر العودة للشات</button>
+    </div>
+
+    <script>
+        // إعلام تليجرام بأن التطبيق جاهز ومستقر
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand(); // فتح التطبيق بكامل الشاشة
+
+        // دالة لإرسال الأوامر للبوت أوتوماتيك عند الضغط على زرار
+        function sendAction(action) {
+            if (action === 'shop') tg.sendData("🛍 المنتجات");
+            if (action === 'deposit') tg.sendData("💰 المحفظة");
+            if (action === 'profile') tg.sendData("💰 المحفظة");
+            if (action === 'support') tg.sendData("🎧 الدعم");
+            if (action === 'share') tg.sendData("🎁 الإحالات");
+        }
+
+        function closeWebApp() {
+            tg.close();
+        }
+    </script>
+</body>
+</html>
