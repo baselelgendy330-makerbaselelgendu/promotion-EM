@@ -33,6 +33,7 @@ DEFAULT_TARGET_CHATS = [
     "pwawz8",
     "https://t.me/+S3GSX490EWo2NTY9",
     "quanziai",
+    "asoftwarez",
 ]
 INTERVAL_SECONDS = 75 * 60
 
