@@ -20,13 +20,11 @@ SESSION_STRING = required_env("TG_SESSION")
 
 DEFAULT_TARGET_CHATS = [
     "elitemethodchat",
-    "gemini3369",
     "ddh992",
     "OpenHuge_ai",
     "Hdc5NmE9",
     "Claudeaichatss",
     "aitoolsbuynsell",
-    "ChatgptPlusDeal",
     "saleslabss",
     "amygpt",
     "maoli9112",

@@ -112,8 +112,8 @@ class PromoTests(unittest.TestCase):
     def test_requested_groups_and_75_minutes(self):
         module = load_promo()
         self.assertEqual(module.TARGET_CHATS, [
-            "elitemethodchat", "gemini3369", "ddh992", "OpenHuge_ai", "Hdc5NmE9",
-            "Claudeaichatss", "aitoolsbuynsell", "ChatgptPlusDeal", "saleslabss",
+            "elitemethodchat", "ddh992", "OpenHuge_ai", "Hdc5NmE9",
+            "Claudeaichatss", "aitoolsbuynsell", "saleslabss",
             "amygpt", "maoli9112", "pwawz8", "https://t.me/+S3GSX490EWo2NTY9",
             "quanziai", "asoftwarez",
             "Clashofclans_sell_buy", "muabantelegram84", "buyingsellingnf",
@@ -130,7 +130,7 @@ class PromoTests(unittest.TestCase):
             for time, message in [(0, 1), (4500, 2)]
             for chat in module.TARGET_CHATS
         ])
-        self.assertEqual(len(sends), 48)
+        self.assertEqual(len(sends), 44)
         self.assertEqual(reads, [0, 4500])
 
     def test_usernames_links_and_duplicates(self):
@@ -161,7 +161,7 @@ class PromoTests(unittest.TestCase):
 
     def test_extra_existing_groups_are_not_sent_twice(self):
         module = load_promo("https://t.me/Hdc5NmE9,@hdc5nme9,https://t.me/+S3GSX490EWo2NTY9")
-        self.assertEqual(len(module.TARGET_CHATS), 24)
+        self.assertEqual(len(module.TARGET_CHATS), 22)
 
     def test_private_group_is_resolved_for_existing_member(self):
         module = load_promo()
