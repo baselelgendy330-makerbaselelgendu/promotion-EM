@@ -34,8 +34,18 @@ DEFAULT_TARGET_CHATS = [
     "https://t.me/+S3GSX490EWo2NTY9",
     "quanziai",
     "asoftwarez",
+    "Clashofclans_sell_buy",
+    "muabantelegram84",
+    "buyingsellingnf",
+    "lapak_lpm_jualan_trade_jaseb",
+    "receiptxin",
+    "chocryptoviet",
+    "Trading69ChatGroup",
+    "congdongseovietnam",
+    "kyc_mmo97network",
 ]
 INTERVAL_SECONDS = 75 * 60
+SEND_TIMEOUT_SECONDS = 120
 
 
 def get_target_chats() -> list[str]:
@@ -219,8 +229,8 @@ async def run_announcements():
             await asyncio.sleep(delay)
 
         due_chats = [
-            chat for chat, due_at in next_attempt.items()
-            if due_at <= loop.time()
+            chat for chat in sorted(next_attempt, key=next_attempt.get)
+            if next_attempt[chat] <= loop.time()
         ]
         if not due_chats:
             continue
@@ -242,7 +252,9 @@ async def run_announcements():
             delay = INTERVAL_SECONDS
             account_wait = 0
             try:
-                await send_to_chat(chat, message)
+                await asyncio.wait_for(
+                    send_to_chat(chat, message), timeout=SEND_TIMEOUT_SECONDS,
+                )
                 logging.info("Sent successfully to %s from Saved Messages.", label)
             except errors.SlowModeWaitError as error:
                 # Schedule this group separately; never sleep inside its handler.
@@ -256,8 +268,17 @@ async def run_announcements():
                 account_wait = error.seconds + 2
                 delay = max(INTERVAL_SECONDS, account_wait)
                 logging.warning("Telegram requires an account-wide wait of %s seconds.", account_wait)
-            except Exception:
-                logging.exception("Announcement failed for %s; continuing with other groups.", label)
+            except TimeoutError:
+                logging.warning(
+                    "Skipping %s: no completion within %s seconds. Delivery is "
+                    "unconfirmed; retry in 75 minutes. Continuing with other groups.",
+                    label, SEND_TIMEOUT_SECONDS,
+                )
+            except Exception as error:
+                logging.warning(
+                    "Skipping %s (%s): %s. Retrying in 75 minutes; "
+                    "continuing with other groups.", label, type(error).__name__, error,
+                )
 
             next_attempt[chat] = loop.time() + delay
             logging.info("Next attempt for %s in %s minutes.", label, delay / 60)

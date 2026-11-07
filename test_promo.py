@@ -90,7 +90,10 @@ class PromoTests(unittest.TestCase):
         async def send(chat, message):
             sends.append((now, chat, message))
             if send_failures and (now, chat) in send_failures:
-                raise send_failures[(now, chat)]
+                failure = send_failures[(now, chat)]
+                if failure == "hang":
+                    await asyncio.Event().wait()
+                raise failure
             if fail_send and len(sends) == 1:
                 raise fail_send
 
@@ -99,6 +102,7 @@ class PromoTests(unittest.TestCase):
         # Replace only the module's asyncio reference, not the real event loop.
         module.asyncio = types.SimpleNamespace(
             sleep=sleep,
+            wait_for=asyncio.wait_for,
             get_running_loop=lambda: types.SimpleNamespace(time=lambda: now),
         )
         with self.assertRaises(StopSimulation):
@@ -112,6 +116,9 @@ class PromoTests(unittest.TestCase):
             "Claudeaichatss", "aitoolsbuynsell", "ChatgptPlusDeal", "saleslabss",
             "amygpt", "maoli9112", "pwawz8", "https://t.me/+S3GSX490EWo2NTY9",
             "quanziai", "asoftwarez",
+            "Clashofclans_sell_buy", "muabantelegram84", "buyingsellingnf",
+            "lapak_lpm_jualan_trade_jaseb", "receiptxin", "chocryptoviet",
+            "Trading69ChatGroup", "congdongseovietnam", "kyc_mmo97network",
         ])
         self.assertEqual(module.INTERVAL_SECONDS, 4500)
 
@@ -123,7 +130,7 @@ class PromoTests(unittest.TestCase):
             for time, message in [(0, 1), (4500, 2)]
             for chat in module.TARGET_CHATS
         ])
-        self.assertEqual(len(sends), 30)
+        self.assertEqual(len(sends), 48)
         self.assertEqual(reads, [0, 4500])
 
     def test_usernames_links_and_duplicates(self):
@@ -154,7 +161,7 @@ class PromoTests(unittest.TestCase):
 
     def test_extra_existing_groups_are_not_sent_twice(self):
         module = load_promo("https://t.me/Hdc5NmE9,@hdc5nme9,https://t.me/+S3GSX490EWo2NTY9")
-        self.assertEqual(len(module.TARGET_CHATS), 15)
+        self.assertEqual(len(module.TARGET_CHATS), 24)
 
     def test_private_group_is_resolved_for_existing_member(self):
         module = load_promo()
@@ -256,9 +263,42 @@ class PromoTests(unittest.TestCase):
         )
         self.assertEqual([(t, chat) for t, chat, _ in sends], [
             (0, "elitemethodchat"),
-            (9002, "elitemethodchat"), (9002, "othergroup"),
+            (9002, "othergroup"), (9002, "elitemethodchat"),
         ])
         self.assertEqual(reads, [0, 9002])
+
+    def test_hung_group_times_out_and_next_group_is_attempted(self):
+        module = load_promo("othergroup", defaults=["elitemethodchat"])
+        module.SEND_TIMEOUT_SECONDS = 0.01
+        sends, _ = self.simulate(module, end=4500, send_failures={
+            (0, "elitemethodchat"): "hang",
+        })
+        self.assertEqual([(time, chat) for time, chat, _ in sends], [
+            (0, "elitemethodchat"), (0, "othergroup"),
+            (4500, "elitemethodchat"), (4500, "othergroup"),
+        ])
+
+    def test_unattempted_groups_get_priority_after_long_flood_wait(self):
+        module = load_promo(defaults=["firstgroup", "limitedgroup", "lastgroup"])
+        sends, _ = self.simulate(module, end=9002, send_failures={
+            (0, "limitedgroup"): FloodWaitError(9000),
+        })
+        self.assertEqual([(time, chat) for time, chat, _ in sends], [
+            (0, "firstgroup"), (0, "limitedgroup"),
+            (9002, "lastgroup"), (9002, "firstgroup"), (9002, "limitedgroup"),
+        ])
+
+    def test_multiple_unavailable_groups_do_not_block_healthy_group(self):
+        module = load_promo(defaults=["deniedgroup", "invalidgroup", "healthygroup"])
+        sends, _ = self.simulate(module, end=4500, send_failures={
+            (0, "deniedgroup"): RuntimeError("You cannot write in this chat"),
+            (0, "invalidgroup"): ValueError("Username not found"),
+            (4500, "deniedgroup"): RuntimeError("Still forbidden"),
+        })
+        self.assertEqual([(time, chat) for time, chat, _ in sends], [
+            (0, "deniedgroup"), (0, "invalidgroup"), (0, "healthygroup"),
+            (4500, "deniedgroup"), (4500, "invalidgroup"), (4500, "healthygroup"),
+        ])
 
     def test_short_flood_wait_keeps_failed_group_interval(self):
         sends, reads = self.simulate(
