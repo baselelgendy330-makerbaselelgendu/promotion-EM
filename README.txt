@@ -40,6 +40,9 @@ An unavailable private group is logged and retried on its next scheduled attempt
 Message links and numeric group IDs are not supported by this setting.
 
 An error or slow mode in one group does not stop the other groups.
+For slow mode, skip the affected group and retry after Telegram's remaining wait
+plus two seconds. If it still requires a wait, reschedule that group again and
+continue the others. After a successful send, its normal 75-minute timer resumes.
 Telegram account-wide FloodWait pauses all sending for the required time.
 Telegram wait limits and connection issues may delay the normal 75-minute schedule.
 Use one running replica. Redeploy/restart triggers an immediate send.
@@ -52,6 +55,9 @@ Offline checks (no Telegram connection): python -m unittest -v test_promo.py
 شرح سريع:
 تمت إضافة ١٤ جروب إلى الجروب القديم elitemethodchat، والإجمالي ١٥ جروب.
 الجروب Hdc5NmE9 موجود مرة واحدة فقط. الإرسال لكل جروب كل ٧٥ دقيقة.
+لو جروب عليه وضع بطيء، يتم تخطيه وإكمال باقي الجروبات، ثم إعادة المحاولة
+بعد مدة الانتظار التي يحددها تيليجرام مع ثانيتين احتياط. لو الانتظار مستمر،
+يتأجل نفس الجروب مرة أخرى؛ وبعد نجاح الإرسال يعود لجدول الساعة والربع.
 الجروبات المطلوبة مضافة داخل الكود بالفعل ولا تحتاج متغير إعدادات إضافي.
 لإضافة جروبات أخرى، أضف متغير TG_EXTRA_CHATS في Railway وضع يوزرات الجروبات
 مفصولة بفاصلة، أو أضفها إلى DEFAULT_TARGET_CHATS داخل telegram_promo.py.

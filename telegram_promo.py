@@ -245,8 +245,13 @@ async def run_announcements():
                 await send_to_chat(chat, message)
                 logging.info("Sent successfully to %s from Saved Messages.", label)
             except errors.SlowModeWaitError as error:
-                delay = max(INTERVAL_SECONDS, error.seconds + 2)
-                logging.warning("Slow mode in %s; retry in %s seconds.", label, delay)
+                # Schedule this group separately; never sleep inside its handler.
+                # If Telegram asks for another wait on retry, reschedule it again.
+                delay = max(1, error.seconds + 2)
+                logging.warning(
+                    "Skipping %s due to slow mode; retry in %s seconds. "
+                    "Continuing with other groups.", label, delay,
+                )
             except errors.FloodWaitError as error:
                 account_wait = error.seconds + 2
                 delay = max(INTERVAL_SECONDS, account_wait)
